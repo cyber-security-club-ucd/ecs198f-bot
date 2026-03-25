@@ -1,7 +1,7 @@
 [project]
-name = "wccomps-bot"
+name = "ecs198f-bot"
 version = "1.0.0"
-description = "Discord bot and web interface for WCComps team management"
+description = "Discord bot for ECS 198F — authenticates students via Authentik and assigns roles"
 requires-python = ">=3.14"
 dependencies = [
     # Discord bot
@@ -14,18 +14,11 @@ dependencies = [
     "pyjwt>=2.8.0",
     "gunicorn>=21.2",
     "whitenoise>=6.6",
-    "pillow>=10.0.0",
     # Authentik integration
-    "authlib>=1.3.1",
-    "authentik-client>=2024.12.1",
-    # Shared dependencies
-    "psycopg2-binary>=2.9.9",
-    "aiohttp>=3.9",
-    "xkcdpass>=1.19.9",
-    "django-smart-ratelimit>=0.8.11",
     "httpx>=0.28.1",
-    "openpyxl>=3.1.5",
-    "weasyprint>=63.0",
+    # Shared
+    "psycopg2-binary>=2.9.9",
+    "asgiref>=3.8",
 ]
 
 [project.optional-dependencies]
@@ -49,27 +42,18 @@ dev = [
     "pytest>=7.4",
     "pytest-django>=4.7",
     "pytest-asyncio>=0.21",
-    "pytest-playwright>=0.4.0",
-    "playwright>=1.40.0",
-    "hypothesis[django]>=6.100",
     "mypy>=1.13",
     "pytest-cov>=7.0.0",
-    "vulture>=2.14",
-    "radon>=6.0.1",
-    "pyotp>=2.9.0",
-    "djlint>=1.36.4",
-    "types-openpyxl>=3.1.5.20250919",
-    "pytest-xdist>=3.8.0",
+    "django-stubs>=5.1.1",
 ]
 
 [tool.mypy]
 python_version = "3.14"
 plugins = ["mypy_django_plugin.main"]
 mypy_path = "web"
-files = ["bot", "web/core", "web/team", "web/ticketing", "web/quotient", "web/wccomps", "web/scoring", "web/orange_team", "web/packets", "web/registration"]
-exclude = "(/tests/|/test_|tests\\.py|integration_tests/|conftest\\.py)"
+files = ["bot", "web/core", "web/team", "web/wccomps"]
+exclude = "(/tests/|/test_|tests\\.py|conftest\\.py)"
 
-# Strict type checking
 warn_unused_ignores = true
 warn_redundant_casts = true
 warn_unreachable = true
@@ -91,26 +75,13 @@ strict_optional = true
 strict_equality = true
 extra_checks = true
 
-# Output
 show_error_codes = true
 pretty = true
 color_output = true
-
-# Performance
 incremental = true
 cache_dir = ".mypy_cache"
-
-# Imports
 follow_imports = "normal"
 ignore_missing_imports = false
-
-[[tool.mypy.overrides]]
-module = "xkcdpass.*"
-ignore_missing_imports = true
-
-[[tool.mypy.overrides]]
-module = "allauth.*"
-ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
 module = "psycopg2.*"
@@ -119,15 +90,6 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "*.migrations.*"
 ignore_errors = true
-
-[[tool.mypy.overrides]]
-module = "django_smart_ratelimit"
-follow_imports = "normal"
-no_implicit_reexport = false
-
-[[tool.mypy.overrides]]
-module = "weasyprint"
-ignore_missing_imports = true
 
 [tool.django-stubs]
 django_settings_module = "wccomps.settings"
@@ -140,23 +102,11 @@ asyncio_default_fixture_loop_scope = "function"
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-testpaths = ["bot/tests", "web/core/tests", "web/scoring/tests", "web/team/tests", "web/packets/tests", "web/registration/tests", "web/orange_team/tests", "web/ticketing/tests", "web/browser_tests"]
-addopts = ["--tb=short", "-n", "6", "--dist", "worksteal"]
+testpaths = ["bot/tests", "web/core/tests", "web/team/tests"]
+addopts = ["--tb=short"]
 markers = [
-    "critical: Critical tests that must pass on every deployment",
     "integration: Integration tests with real database and APIs",
-    "browser: Browser-based UI tests using Playwright",
-    "load: Load and stress tests for concurrency and performance",
 ]
-
-[tool.djlint]
-profile = "django"
-indent = 4
-max_line_length = 120
-format_css = true
-format_js = false  # Disabled: breaks Django template tags inside <script>
-# H030/H031: meta description/keywords are SEO tags - not applicable to emails or PDFs
-ignore = "H030,H031"
 
 [tool.ruff]
 target-version = "py314"
@@ -174,36 +124,18 @@ exclude = [
 
 [tool.ruff.lint]
 select = [
-    "E",      # pycodestyle errors
-    "W",      # pycodestyle warnings
-    "F",      # pyflakes (unused imports, undefined names, etc.)
-    "I",      # isort (import sorting)
-    "UP",     # pyupgrade (modern Python syntax)
-    "B",      # flake8-bugbear (common mistakes)
-    "C4",     # flake8-comprehensions (better list/dict comprehensions)
-    "PIE",    # flake8-pie (misc lints)
-    "SIM",    # flake8-simplify (simplification suggestions)
-    "T10",    # flake8-debugger (no forgotten breakpoints)
-    "N",      # pep8-naming (naming conventions)
-    "Q",      # flake8-quotes (consistent quotes)
-    "S",      # flake8-bandit (security issues)
-    "ASYNC",  # flake8-async (async/await correctness)
-    "DTZ",    # flake8-datetimez (timezone awareness)
-    "ERA",    # eradicate (no commented-out code)
-    "PTH",    # flake8-use-pathlib (use pathlib)
-    "PERF",   # performance improvements
+    "E", "W", "F", "I", "UP", "B", "C4", "PIE", "SIM", "T10",
+    "N", "Q", "S", "ASYNC", "DTZ", "PERF",
 ]
 ignore = [
-    "E402",    # module level import not at top (django.setup pattern)
-    "DTZ007",  # strptime without %z (we parse naive then add timezone)
+    "E402",   # module level import not at top (django.setup pattern)
+    "DTZ007", # strptime without %z
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "**/tests/**" = ["S101", "S105", "S106", "S110", "S311"]
 "**/test_*.py" = ["S101", "S105", "S106", "S110", "S311"]
-"**/tests.py" = ["S101", "S105", "S106", "S110", "S311"]
 "**/conftest.py" = ["S101", "S105", "S106", "S110", "S311"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["bot", "web", "core", "team", "person", "ticketing", "competition"]
-
+known-first-party = ["bot", "web", "core", "team", "wccomps"]
