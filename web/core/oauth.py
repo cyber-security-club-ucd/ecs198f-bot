@@ -13,7 +13,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from .auth_utils import get_role_based_landing_url
 from .models import UserGroups
 
 logger = logging.getLogger(__name__)
@@ -29,7 +28,7 @@ def _get_oauth_config() -> dict[str, str]:
     server_url = getattr(
         settings,
         "AUTHENTIK_OIDC_URL",
-        "https://auth.wccomps.org/application/o/discord-bot/",
+        "https://auth.daviscybersec.org/application/o/discord-bot/",
     )
 
     # Authentik uses shared endpoints (not per-application)
@@ -150,7 +149,7 @@ def oauth_callback(request: HttpRequest) -> HttpResponse:
     # Exchange code for tokens
     redirect_uri = request.build_absolute_uri("/auth/callback/")
     try:
-        with httpx.Client(timeout=settings.HTTPX_DEFAULT_TIMEOUT) as client:
+        with httpx.Client(timeout=10) as client:
             token_response = client.post(
                 config["token_endpoint"],
                 data={
@@ -182,7 +181,7 @@ def oauth_callback(request: HttpRequest) -> HttpResponse:
         )
 
     try:
-        with httpx.Client(timeout=settings.HTTPX_DEFAULT_TIMEOUT) as client:
+        with httpx.Client(timeout=10) as client:
             userinfo_response = client.get(
                 config["userinfo_endpoint"],
                 headers={"Authorization": f"Bearer {access_token}"},
@@ -255,7 +254,8 @@ def oauth_callback(request: HttpRequest) -> HttpResponse:
     if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
         next_url = "/"
     if next_url == "/":
-        next_url = get_role_based_landing_url(groups)
+        # After login with no specific next, redirect to health check or stay at root
+        pass
 
     return redirect(next_url)
 
