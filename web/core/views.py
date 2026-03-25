@@ -2,6 +2,7 @@
 
 import logging
 from typing import Protocol, cast
+from urllib.parse import quote
 
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -40,6 +41,9 @@ class ModelWithObjects(Protocol):
 
 
 logger = logging.getLogger(__name__)
+
+# Expiry used by the 198F token-based auth flow
+TOKEN_EXPIRY_MINUTES = 15
 
 
 def home(request: HttpRequest) -> HttpResponse:
@@ -95,8 +99,6 @@ def link_initiate(request: HttpRequest) -> HttpResponse:
     request.session["pending_link_discord_id"] = link_token.discord_id
 
     # Pass token through OAuth redirect via next parameter
-    from urllib.parse import quote
-
     next_url = quote(f"/auth/link-callback?token={link_token.token}", safe="")
     return redirect(f"/auth/login/?next={next_url}")
 
@@ -228,8 +230,6 @@ def auth_198f_initiate(request: HttpRequest) -> HttpResponse:
     # Store token in session for CSRF protection
     request.session["pending_198f_token"] = link_token.token
 
-    from urllib.parse import quote
-
     next_url = quote(f"/auth/198f-callback?token={link_token.token}", safe="")
     return redirect(f"/auth/login/?next={next_url}")
 
@@ -313,9 +313,6 @@ def auth_198f_callback(request: HttpRequest) -> HttpResponse:
             "authentik_username": authentik_username,
         },
     )
-
-
-TOKEN_EXPIRY_MINUTES = 15
 
 
 @require_permission("gold_team")

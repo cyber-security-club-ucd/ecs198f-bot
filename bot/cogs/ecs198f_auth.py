@@ -64,7 +64,9 @@ class Ecs198fAuthView(discord.ui.View):
         emoji="🔐",
         custom_id=AUTH_BUTTON_CUSTOM_ID,
     )
-    async def authenticate(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def on_authenticate_button_click(
+        self, interaction: discord.Interaction, button: discord.ui.Button
+    ) -> None:
         """Handle button click: generate a token and reply with the auth URL."""
         user = interaction.user
         discord_id = user.id
