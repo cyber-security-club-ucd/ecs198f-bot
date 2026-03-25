@@ -255,6 +255,9 @@ ORANGETEAM_ROLE_ID = int(os.environ.get("ORANGETEAM_ROLE_ID", "0"))
 REDTEAM_ROLE_ID = int(os.environ.get("REDTEAM_ROLE_ID", "0"))
 GOLDTEAM_ROLE_ID = int(os.environ.get("GOLDTEAM_ROLE_ID", "0"))
 
+# ECS 198F course: Authentik group "198F-student" → Discord role
+ECS198F_STUDENT_ROLE_ID = int(os.environ.get("ECS198F_STUDENT_ROLE_ID", "0"))
+
 # Authentik group name to Discord role ID mapping
 GROUP_ROLE_MAPPING = {
     "WCComps_BlackTeam": BLACKTEAM_ROLE_ID,
@@ -262,6 +265,7 @@ GROUP_ROLE_MAPPING = {
     "WCComps_OrangeTeam": ORANGETEAM_ROLE_ID,
     "WCComps_RedTeam": REDTEAM_ROLE_ID,
     "WCComps_GoldTeam": GOLDTEAM_ROLE_ID,
+    "198F-student": ECS198F_STUDENT_ROLE_ID,
 }
 
 # Guild configuration for role synchronization

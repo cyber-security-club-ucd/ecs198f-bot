@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% load cotton %}
+{% block title %}
+    Authentication Successful - ECS 198F
+{% endblock title %}
+{% block content %}
+    <div id="content-main">
+        <c-page_header title="Authentication Successful" />
+        <c-module>
+        <c-detail_grid>
+        <c-detail_row label="Discord Account">{{ discord_username }}</c-detail_row>
+        <c-detail_row label="Authentik Username">{{ authentik_username }}</c-detail_row>
+        </c-detail_grid>
+        <p class="mt-20">
+            You have been verified as an ECS 198F student. Your <strong>ecs198f-student</strong> role
+            will be assigned in Discord shortly.
+        </p>
+        <p class="mt-10 text-muted">
+            You can now close this window and return to Discord.
+            If you don't see your role within a few minutes, please contact your instructor.
+        </p>
+        </c-module>
+    </div>
+{% endblock content %}

@@ -303,6 +303,7 @@ MIDDLEWARE_WHITELIST_EXACT = [
     "/auth/callback/",
     "/auth/logout/",
     "/auth/link",
+    "/auth/198f",
 ]
 MIDDLEWARE_WHITELIST_STARTSWITH = ["/register/edit/"]
 

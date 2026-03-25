@@ -87,6 +87,7 @@ class WCCompsBot(commands.Bot):
 
         # Load cogs
         await self.load_extension("bot.cogs.linking")
+        await self.load_extension("bot.cogs.ecs198f_auth")
         await self.load_extension("bot.cogs.ticketing")
         await self.load_extension("bot.cogs.scoring")
         await self.load_extension("bot.cogs.help_panels")
@@ -103,6 +104,12 @@ class WCCompsBot(commands.Bot):
 
         self.add_view(TicketActionView(ticket_id=0))
         logger.info("Registered persistent ticket action view")
+
+        # Register persistent view for ecs198f-auth button
+        from bot.cogs.ecs198f_auth import Ecs198fAuthView
+
+        self.add_view(Ecs198fAuthView())
+        logger.info("Registered persistent ecs198f auth view")
 
         # Log registered commands for debugging
         commands_list = self.tree.get_commands()

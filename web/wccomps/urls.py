@@ -18,6 +18,9 @@ urlpatterns = [
     # Discord linking routes
     path("auth/link", views.link_initiate, name="link_initiate"),
     path("auth/link-callback", views.link_callback, name="link_callback"),
+    # ECS 198F authentication routes
+    path("auth/198f", views.auth_198f_initiate, name="auth_198f_initiate"),
+    path("auth/198f-callback", views.auth_198f_callback, name="auth_198f_callback"),
     path("packet/", include("packets.urls_team")),
     path("packets/", include("packets.urls_admin")),
     path("ops/school-info/", views.school_info, name="school_info"),

@@ -77,6 +77,7 @@ class AuthentikRequiredMiddleware:
             "/auth/callback/",  # OAuth callback
             "/auth/logout/",  # Logout
             "/auth/link",  # Discord account linking (token-based)
+            "/auth/198f",  # ECS 198F student authentication (token-based)
         ]
         # Startswith for token-based public pages
         self.whitelist_startswith = [
