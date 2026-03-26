@@ -38,7 +38,8 @@ class TestOAuthLogin:
             }
             response = client.get("/auth/login/")
         assert response.status_code == 302
-        assert "daviscybersec.org" in response.url
+        from urllib.parse import urlparse
+        assert urlparse(response.url).hostname == "auth.daviscybersec.org"
         assert "client_id=test-client-id" in response.url
 
 
@@ -77,4 +78,5 @@ class TestOAuthLogout:
             }
             response = client.get("/auth/logout/")
         assert response.status_code == 302
-        assert "daviscybersec.org" in response.url
+        from urllib.parse import urlparse
+        assert urlparse(response.url).hostname == "auth.daviscybersec.org"

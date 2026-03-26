@@ -1,19 +1,9 @@
-{% extends "admin/base_site.html" %}
-{% load cotton %}
-{% block title %}
-    Error - WCComps
-{% endblock title %}
+{% extends "base.html" %}
+{% block title %}Error — ECS 198F{% endblock %}
 {% block content %}
-    <div id="content-main">
-        <c-page_header title="{{ error }}" />
-        <c-module>
-        <c-alert variant="error">
-        <p class="m-0">{{ error }}</p>
-        </c-alert>
-        <c-fieldset>
-        <p>{{ message }}</p>
-        </c-fieldset>
-        <p class="mt-20">If you believe this is an error, please contact an administrator for assistance.</p>
-        </c-module>
-    </div>
-{% endblock content %}
+<h1>{{ error }}</h1>
+<div class="card error">
+    <p>{{ message }}</p>
+    <p class="muted">If you believe this is an error, please contact an administrator.</p>
+</div>
+{% endblock %}

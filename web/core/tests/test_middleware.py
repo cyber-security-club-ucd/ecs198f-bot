@@ -144,4 +144,7 @@ class TestSecuritySettings:
 
     def test_authentik_url_points_to_daviscybersec(self):
         """Authentik auth URL must point to auth.daviscybersec.org."""
-        assert "daviscybersec.org" in settings.AUTHENTIK_URL
+        from urllib.parse import urlparse
+
+        parsed = urlparse(settings.AUTHENTIK_URL)
+        assert parsed.hostname in ("auth.daviscybersec.org", "daviscybersec.org")
