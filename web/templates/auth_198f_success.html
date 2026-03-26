@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Authentication Successful — ECS 198F{% endblock %}
+{% block content %}
+<h1>Authentication Successful</h1>
+<div class="card success">
+    <div class="label">Discord Account</div>
+    <div class="value">{{ discord_username }}</div>
+    <div class="label">Authentik Username</div>
+    <div class="value">{{ authentik_username }}</div>
+    <p>You have been verified as an ECS 198F student. Your <strong>ecs198f-student</strong> role
+    will be assigned in Discord shortly.</p>
+    <p class="muted">You can now close this window and return to Discord.
+    If you don't see your role within a few minutes, please contact your instructor.</p>
+</div>
+{% endblock %}

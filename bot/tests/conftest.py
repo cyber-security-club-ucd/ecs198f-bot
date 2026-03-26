@@ -1,4 +1,4 @@
-"""Pytest fixtures for bot command testing."""
+"""Pytest fixtures for bot tests."""
 
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
@@ -9,58 +9,6 @@ import pytest_asyncio
 from django.contrib.auth.models import User
 
 from core.models import UserGroups
-from team.models import DiscordLink, Team
-from ticketing.models import TicketCategory
-
-
-@pytest_asyncio.fixture
-async def box_reset_category(db: Any) -> TicketCategory:
-    """Create box-reset ticket category for bot tests."""
-    cat, _ = await TicketCategory.objects.aget_or_create(
-        pk=2,
-        defaults={
-            "display_name": "Box Reset",
-            "points": 60,
-            "required_fields": ["hostname", "ip_address"],
-            "optional_fields": ["service_name"],
-            "sort_order": 1,
-        },
-    )
-    return cat
-
-
-@pytest_asyncio.fixture
-async def scoring_check_category(db: Any) -> TicketCategory:
-    """Create scoring-service-check ticket category for bot tests."""
-    cat, _ = await TicketCategory.objects.aget_or_create(
-        pk=3,
-        defaults={
-            "display_name": "Scoring Service Check",
-            "points": 10,
-            "required_fields": ["hostname", "ip_address", "service_name"],
-            "optional_fields": [],
-            "sort_order": 2,
-        },
-    )
-    return cat
-
-
-@pytest_asyncio.fixture
-async def other_category(db: Any) -> TicketCategory:
-    """Create other ticket category for bot tests."""
-    cat, _ = await TicketCategory.objects.aget_or_create(
-        pk=6,
-        defaults={
-            "display_name": "Other",
-            "points": 0,
-            "required_fields": ["description"],
-            "optional_fields": [],
-            "variable_points": True,
-            "user_creatable": True,
-            "sort_order": 5,
-        },
-    )
-    return cat
 
 
 @pytest.fixture
@@ -68,96 +16,20 @@ def mock_interaction() -> Any:
     """Create a mock Discord interaction."""
     interaction = AsyncMock(spec=discord.Interaction)
 
-    # Mock user
     interaction.user = MagicMock(spec=discord.User)
     interaction.user.id = 211533935144992768
     interaction.user.name = "testuser"
+    interaction.user.__str__ = MagicMock(return_value="testuser#0001")
     interaction.user.mention = "<@211533935144992768>"
 
-    # Mock guild
     interaction.guild = MagicMock(spec=discord.Guild)
     interaction.guild.id = 525435725123158026
     interaction.guild.name = "Test Guild"
 
-    # Mock response
     interaction.response = AsyncMock()
     interaction.followup = AsyncMock()
 
     return interaction
-
-
-@pytest_asyncio.fixture
-async def mock_admin_user(db: Any) -> User:
-    import random
-    import uuid
-
-    unique_id = str(uuid.uuid4())[:8]
-    username = f"testadmin_{unique_id}"
-    discord_id = random.randint(100000000000000000, 999999999999999999)
-
-    user = await User.objects.acreate(
-        username=username,
-        email=f"admin_{unique_id}@test.com",
-    )
-
-    await UserGroups.objects.acreate(
-        user=user,
-        authentik_id=f"test-uid-{unique_id}",
-        groups=[
-            "WCComps_Discord_Admin",
-            "WCComps_Ticketing_Admin",
-        ],
-    )
-
-    await DiscordLink.objects.acreate(
-        discord_id=discord_id,
-        discord_username=username,
-        user=user,
-        is_active=True,
-        team=None,
-    )
-
-    user._discord_id = discord_id
-    return user
-
-
-@pytest_asyncio.fixture
-async def mock_team_user(db: Any) -> User:
-    import random
-    import uuid
-
-    unique_id = str(uuid.uuid4())[:8]
-    username = f"teammember_{unique_id}"
-    discord_id = random.randint(100000000000000000, 999999999999999999)
-
-    user = await User.objects.acreate(
-        username=username,
-        email=f"team_{unique_id}@test.com",
-    )
-
-    team = await Team.objects.acreate(
-        team_number=(int(unique_id, 16) % 50) + 1,  # Valid range: 1-50
-        team_name=f"Test Team {unique_id}",
-        authentik_group=f"WCComps_BlueTeam{(int(unique_id, 16) % 50) + 1:02d}",
-        max_members=5,
-    )
-
-    await UserGroups.objects.acreate(
-        user=user,
-        authentik_id=f"test-team-uid-{unique_id}",
-        groups=["WCComps_BlueTeam01"],
-    )
-
-    await DiscordLink.objects.acreate(
-        discord_id=discord_id,
-        discord_username=username,
-        user=user,
-        is_active=True,
-        team=team,
-    )
-
-    user._discord_id = discord_id
-    return user
 
 
 @pytest.fixture
@@ -166,9 +38,8 @@ def mock_bot() -> Any:
     bot = AsyncMock(spec=discord.Client)
     bot.user = MagicMock()
     bot.user.id = 1422808875651829785
-    bot.user.name = "wccomps-bot"
+    bot.user.name = "ecs198f-bot"
 
-    # Mock command tree
     bot.tree = MagicMock()
     bot.tree.get_commands = MagicMock(return_value=[])
     bot.tree.add_command = MagicMock()
@@ -178,126 +49,44 @@ def mock_bot() -> Any:
 
 @pytest.fixture
 def mock_discord_guild() -> Any:
+    """Create a mock Discord guild with a student role."""
     guild = MagicMock(spec=discord.Guild)
     guild.id = 525435725123158026
     guild.name = "Test Guild"
 
-    member1 = MagicMock(spec=discord.Member)
-    member1.id = 111111111
-    member1.name = "member1"
-    member1.roles = []
-
-    member2 = MagicMock(spec=discord.Member)
-    member2.id = 222222222
-    member2.name = "member2"
-    member2.roles = []
-
-    team1_role = MagicMock(spec=discord.Role)
-    team1_role.id = 5001
-    team1_role.name = "Team 01"
-    team1_role.members = [member1]
-
-    team2_role = MagicMock(spec=discord.Role)
-    team2_role.id = 5002
-    team2_role.name = "Team 02"
-    team2_role.members = [member2]
-
-    blueteam_role = MagicMock(spec=discord.Role)
-    blueteam_role.id = 525444104763736075
-    blueteam_role.name = "Blueteam"
-    blueteam_role.members = [member1, member2]
-
-    member1.roles = [team1_role, blueteam_role]
-    member2.roles = [team2_role, blueteam_role]
+    student_role = MagicMock(spec=discord.Role)
+    student_role.id = 99999999
+    student_role.name = "ecs198f-student"
 
     def get_role_by_id(role_id: int) -> Any:
-        role_map = {
-            5001: team1_role,
-            5002: team2_role,
-            525444104763736075: blueteam_role,
-        }
-        return role_map.get(role_id)
+        return {99999999: student_role}.get(role_id)
 
     guild.get_role = MagicMock(side_effect=get_role_by_id)
-    guild.roles = [team1_role, team2_role, blueteam_role]
-
-    member1.remove_roles = AsyncMock()
-    member2.remove_roles = AsyncMock()
+    guild.roles = [student_role]
 
     return guild
 
 
-@pytest.fixture(autouse=True)
-def reset_bot_module_references() -> None:
-    """Reset bot module references that may be polluted by @patch on bot.utils.
-
-    Same pattern as web/conftest.py reset_has_permission_reference: if a module
-    is first imported while a patch on the source module is active, the local
-    binding captures the mock instead of the real function.
-    """
-    import bot.utils
-    import core.authentik_utils
-
-    _real_log = bot.utils.log_to_ops_channel
-    _real_safe_remove = bot.utils.safe_remove_role
-    _real_remove_blueteam = bot.utils.remove_blueteam_role
-    _real_generate_pw = core.authentik_utils.generate_blueteam_password
-    _real_parse_range = core.authentik_utils.parse_team_range
-
-    yield
-
-    # Restore source modules
-    bot.utils.log_to_ops_channel = _real_log
-    bot.utils.safe_remove_role = _real_safe_remove
-    bot.utils.remove_blueteam_role = _real_remove_blueteam
-    core.authentik_utils.generate_blueteam_password = _real_generate_pw
-    core.authentik_utils.parse_team_range = _real_parse_range
-
-    # Restore consumer modules
-    import bot.cogs.admin_teams
-
-    bot.cogs.admin_teams.log_to_ops_channel = _real_log
-    bot.cogs.admin_teams.safe_remove_role = _real_safe_remove
-    bot.cogs.admin_teams.remove_blueteam_role = _real_remove_blueteam
-    bot.cogs.admin_teams.generate_blueteam_password = _real_generate_pw
-    bot.cogs.admin_teams.parse_team_range = _real_parse_range
-
-    import bot.cogs.admin_competition
-
-    bot.cogs.admin_competition.log_to_ops_channel = _real_log
-    bot.cogs.admin_competition.generate_blueteam_password = _real_generate_pw
-    bot.cogs.admin_competition.parse_team_range = _real_parse_range
-
-
-@pytest.fixture(autouse=True)
-def setup_django() -> None:
-    """Set up Django for tests."""
-    import os
-
-    import django
-
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "wccomps.settings")
-    django.setup()
+@pytest_asyncio.fixture
+async def student_user(db: Any) -> User:
+    """Create a Django user with the 198F-student Authentik group."""
+    import uuid
+    unique_id = str(uuid.uuid4())[:8]
+    user = await User.objects.acreate(
+        username=f"student_{unique_id}",
+        email=f"student_{unique_id}@example.com",
+    )
+    await UserGroups.objects.acreate(
+        user=user,
+        authentik_id=f"test-uid-{unique_id}",
+        groups=["198F-student"],
+    )
+    return user
 
 
 @pytest.fixture(autouse=True)
 def _patch_group_role_mapping(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Patch GROUP_ROLE_MAPPING with non-zero role IDs for all bot tests.
-
-    Settings default to 0 when env vars are not set, which causes role
-    lookups to fail in tests that create mock roles with specific IDs.
-    """
+    """Patch GROUP_ROLE_MAPPING with a non-zero role ID for bot tests."""
     from django.conf import settings
 
-    test_mapping = {
-        "WCComps_BlackTeam": 779192640540639263,
-        "WCComps_WhiteTeam": 647838503505362957,
-        "WCComps_OrangeTeam": 647878925040615446,
-        "WCComps_RedTeam": 647878925040615447,
-        "WCComps_GoldTeam": 647878925040615448,
-    }
-    monkeypatch.setattr(settings, "GROUP_ROLE_MAPPING", test_mapping)
-    monkeypatch.setattr(settings, "WHITETEAM_ROLE_ID", 647838503505362957)
-    monkeypatch.setattr(settings, "BLACKTEAM_ROLE_ID", 779192640540639263)
-    monkeypatch.setattr(settings, "ORANGETEAM_ROLE_ID", 647878925040615446)
-    monkeypatch.setattr(settings, "DISCORD_TICKET_QUEUE_CHANNEL_ID", 9999)
+    monkeypatch.setattr(settings, "GROUP_ROLE_MAPPING", {"198F-student": 99999999})
